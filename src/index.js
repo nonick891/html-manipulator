@@ -1,6 +1,6 @@
 import { tofAppend, tofNode, tofStr } from './type-check';
 
-export const getElOr = (element, selector) =>
+const getElOr = (element, selector) =>
 	tofNode(element)
 	? element
 	: (bodySelector(tofStr(element) ? element : selector))
@@ -8,7 +8,7 @@ export const getElOr = (element, selector) =>
 const bodySelector = selector =>
 	document.body.querySelector(selector);
 
-export const safeSelect = (el, selector) =>
+const safeSelect = (el, selector) =>
 	el && selector && !el.isSameNode(selector)
 	? el.querySelector(selector) : el;
 
@@ -17,10 +17,10 @@ export const safeSelect = (el, selector) =>
  * @param {HTMLIFrameElement} iframe
  * @returns {Document}
  */
-export const getContent = iframe =>
+const getContent = iframe =>
 	iframe.contentDocument || iframe.contentWindow.document;
 
-export const appendElement = (obj, parent) =>
+const appendElement = (obj, parent) =>
 	appendChild(createElement(handleTag(obj)), parent);
 
 const appendChild = (el, parent) =>
@@ -63,31 +63,45 @@ const clean = props =>
 const setAttrs = (props, e) =>
 	Object.keys(props).map(key => e.setAttribute(key, props[key]));
 
-export const removeEl = el =>
+const removeEl = el =>
 	tofNode(el) && el.remove();
 
-export const removeEls = els =>
+const removeEls = els =>
 	Array.isArray(els) && els.map(removeEl);
 
-export const removeChildren = root =>
+const removeChildren = root =>
 	root.hasChildNodes() && removeEls(root.childNodes);
 
-export const matches = (selector) =>
+const matches = (selector) =>
 	(node) => node.matches(selector) || node.querySelector(selector);
 
-export const find = (array, selector) => {
+const find = (array, selector) => {
 	let el = array.find(matches(selector)),
 		child = querySelector(el, selector);
 	return child ? child : el;
 };
 
-export const querySelector = (el, selector) =>
+const querySelector = (el, selector) =>
 	el && el instanceof HTMLElement ? el.querySelector(selector) : false
 
-export const select = (array, selector) => {
+const select = (array, selector) => {
 	let filtered = array.filter(matches(selector));
 	return filtered.map(el => {
 		let child = querySelector(el, selector);
 		return child ? child : el;
 	});
 };
+
+export default {
+	getElOr,
+	safeSelect,
+	getContent,
+	appendElement,
+	removeEl,
+	removeEls,
+	removeChildren,
+	matches,
+	find,
+	querySelector,
+	select
+}
