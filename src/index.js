@@ -1,4 +1,4 @@
-import { tofAppend, tofNode, tofStr } from './type-check';
+import { tofAppend, tofNode, tofStr, tofShadowRoot } from './type-check';
 
 const getElOr = (element, selector) =>
 	tofNode(element)
@@ -9,8 +9,8 @@ const bodySelector = selector =>
 	document.body.querySelector(selector);
 
 const safeSelect = (el, selector) =>
-	el && selector && !el.isSameNode(selector)
-	? el.querySelector(selector) : el;
+	(el && selector && el.isSameNode(selector))
+		? el : el.querySelector(selector);
 
 /**
  *
