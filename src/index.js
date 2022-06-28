@@ -8,9 +8,13 @@ const getElOr = (element, selector) =>
 const bodySelector = selector =>
 	document.body.querySelector(selector);
 
-const safeSelect = (el, selector) =>
-	(el && selector && el.isSameNode(selector))
-		? el : el.querySelector(selector);
+const safeSelect = (el, selector) => {
+	if (!el && !selector) return false;
+	if (tofShadowRoot(el) && tofShadowRoot(selector)) return el;
+	if (tofShadowRoot(el) && tofStr(selector)) return el.querySelector(selector);
+	if (el.isSameNode(selector)) return el;
+	return el.querySelector(selector)
+}
 
 /**
  *
@@ -27,16 +31,16 @@ const appendChild = (el, parent) =>
 	tofAppend(parent) && tofNode(el) ? parent.appendChild(el) : false;
 
 const createElement = obj =>
-	fillProps(createChild(obj), obj);
+	fillProps(createChild(obj), obj, obj.ns);
 
 const createChild = obj => {
-	let parent = create(obj.tagName);
+	let parent = create(obj);
 	if (obj.child) obj.child.map(child => appendElement(child, parent));
 	return parent;
 };
 
-const create = tagName =>
-	document.createElement(tagName)
+const create = obj =>
+	obj && obj.ns ? document.createElementNS(obj.ns, obj.tagName) : document.createElement(obj.tagName) ;
 
 const handleTag = obj =>
 	obj && obj.tagName ? obj : addTag(obj);
@@ -47,10 +51,10 @@ const addTag = obj =>
 const getDivTag = () =>
 	({ tagName: 'div' });
 
-const fillProps = (e, props) => {
+const fillProps = (e, props, ns = false) => {
 	setHtml(e, props);
 	clean(props);
-	setAttrs(props, e);
+	setAttrs(props, e, ns);
 	return e;
 };
 
@@ -58,10 +62,14 @@ const setHtml = (el, { html }) =>
 	html ? el.innerHTML = html : false;
 
 const clean = props =>
-	['tagName', 'html', 'child', 'dom-link'].map(n => delete props[n]);
+	['tagName', 'html', 'child', 'dom-link', 'link', 'ns'].map(n => delete props[n]);
 
-const setAttrs = (props, e) =>
-	Object.keys(props).map(key => e.setAttribute(key, props[key]));
+const setAttrs = (props, e, ns) =>
+	Object.keys(props).map(key => setAttr(e, key, props[key], ns));
+
+const setAttr = (e, key, val, ns) => ns
+	? e.setAttributeNS(null, key, val)
+	: e.setAttribute(key, val);
 
 const removeEl = el =>
 	tofNode(el) && el.remove();
@@ -73,7 +81,7 @@ const removeChildren = root =>
 	root.hasChildNodes() && removeEls(root.childNodes);
 
 const matches = (selector) =>
-	(node) => node.matches(selector) || node.querySelector(selector);
+	(node) => node.matches(selector) || querySelector(node, selector);
 
 const find = (array, selector) => {
 	let el = array.find(matches(selector)),
