@@ -31,7 +31,7 @@ const appendChild = (el, parent) =>
 	tofAppend(parent) && tofNode(el) ? parent.appendChild(el) : false;
 
 const createElement = obj =>
-	fillProps(createChild(obj), obj, obj.ns);
+	fillProps(createChild(obj), obj, Boolean(obj.ns));
 
 const createChild = obj => {
 	let parent = create(obj);
@@ -59,7 +59,7 @@ const fillProps = (e, props, ns = false) => {
 };
 
 const setHtml = (el, { html }) =>
-	html ? el.innerHTML = html : false;
+	html ? el.prepend(document.createTextNode(html)) : false;
 
 const clean = props =>
 	['tagName', 'html', 'child', 'dom-link', 'link', 'ns'].map(n => delete props[n]);
@@ -67,9 +67,7 @@ const clean = props =>
 const setAttrs = (props, e, ns) =>
 	Object.keys(props).map(key => setAttr(e, key, props[key], ns));
 
-const setAttr = (e, key, val, ns) => ns
-	? e.setAttributeNS(null, key, val)
-	: e.setAttribute(key, val);
+const setAttr = (e, key, val, ns) => e.setAttribute(key, val);
 
 const removeEl = el =>
 	tofNode(el) && el.remove();
